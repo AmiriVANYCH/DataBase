@@ -2,138 +2,171 @@
 -- Please log an issue at https://redmine.postgresql.org/projects/pgadmin4/issues/new if you find any bugs, including reproduction steps.
 BEGIN;
 
--- Database: Parking
-
--- DROP DATABASE "Parking";
-
-CREATE DATABASE "Parking"
-    WITH 
-    OWNER = postgres
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'English_United States.1252'
-    LC_CTYPE = 'English_United States.1252'
-    TABLESPACE = pg_default
-    CONNECTION LIMIT = -1;
 
 CREATE TABLE IF NOT EXISTS public."Cars"
 (
     "CarRegNum" character varying(8) NOT NULL,
-    "CarOwnerID" integer NOT NULL,
     "CarMakeID" smallint NOT NULL,
-    "CarRFID" bigint NOT NULL,
-    "CarParkingPlaceID" smallint NOT NULL,
+    "CarOwnerID" integer NOT NULL,
     PRIMARY KEY ("CarRegNum")
 );
 
 CREATE TABLE IF NOT EXISTS public."ParkingPlace"
 (
     "ParkingPlaceID" smallint NOT NULL,
-    "ParkingPlaceType" smallint NOT NULL,
+    "ParkingPlaceTypeID" smallint NOT NULL,
     "IsFree" boolean NOT NULL,
     PRIMARY KEY ("ParkingPlaceID")
 );
 
-CREATE TABLE IF NOT EXISTS public."Owners"
+CREATE TABLE IF NOT EXISTS public."Persons"
 (
-    "OwnerID" integer NOT NULL,
-    "OwnerRFID" bigint NOT NULL,
-    "OwnerLastName" character varying(50) NOT NULL,
-    "OwnerName" character varying(50) NOT NULL,
-    "OwnerMidleName" character varying(50),
-    PRIMARY KEY ("OwnerID")
+    "PersonID" integer NOT NULL,
+    "PersonLastName" character varying(50) NOT NULL,
+    "PersonName" character varying(50) NOT NULL,
+    "PersonMidleName" character varying(50),
+    "PersonPhones" character varying(100),
+    PRIMARY KEY ("PersonID")
 );
 
 CREATE TABLE IF NOT EXISTS public."RFIDs"
 (
     "RFIDid" bigint NOT NULL,
-    "RFIDtype" smallint NOT NULL,
+    "RFIDtypeID" smallint NOT NULL,
     "RFIDstatus" boolean NOT NULL,
     PRIMARY KEY ("RFIDid")
 );
 
-CREATE TABLE IF NOT EXISTS public."Owners_Cars"
+CREATE TABLE IF NOT EXISTS public."Journal"
 (
-    "Owners_OwnerID" integer NOT NULL,
+    "Time" timestamp without time zone NOT NULL,
+    "PersonID" integer NOT NULL,
+    "CarRegNum" character varying(8) NOT NULL,
+    "InOut" boolean NOT NULL,
+    "ParkingPlaceID" smallint NOT NULL
+);
+
+COMMENT ON COLUMN public."Journal"."InOut"
+    IS 'true - In, false- out';
+
+CREATE TABLE IF NOT EXISTS public."CarsUsers"
+(
     "Cars_CarRegNum" character varying(8) NOT NULL,
-    PRIMARY KEY ("Owners_OwnerID", "Cars_CarRegNum")
+    "Persons_PersonID" integer NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public."Cars_ParkingPlace"
+(
+    "RecID" integer NOT NULL,
+    "CarRegNum" character varying(8) NOT NULL,
+    "ParkingPlaceID" smallint NOT NULL,
+    "StartDate" date NOT NULL,
+    "EndDate" date,
+    PRIMARY KEY ("RecID")
+);
+
+CREATE TABLE IF NOT EXISTS public."RFIDs_Persons"
+(
+    "RecID" bigint NOT NULL,
+    "RFIDs_RFIDid" bigint NOT NULL,
+    "Persons_PersonID" integer NOT NULL,
+    "StartDate" date NOT NULL,
+    "EndDate" date,
+    PRIMARY KEY ("RecID")
+);
+
+CREATE TABLE IF NOT EXISTS public."RFIDs_Cars"
+(
+    "RecID" integer NOT NULL,
+    "RFIDs_RFIDid" bigint NOT NULL,
+    "Cars_CarRegNum" character varying(8) NOT NULL,
+    "StartDate" date NOT NULL,
+    "EndDate" date,
+    PRIMARY KEY ("RecID")
+);
+
+CREATE TABLE IF NOT EXISTS public."Phones"
+(
+    "Pnone" bigint NOT NULL,
+    "PersonID" integer NOT NULL,
+    PRIMARY KEY ("Pnone")
 );
 
 CREATE TABLE IF NOT EXISTS public."Makes"
 (
     "MakeID" smallint NOT NULL,
     "MakeName" character varying(50) NOT NULL,
+    "MakeDescription" text,
     PRIMARY KEY ("MakeID")
 );
 
-CREATE TABLE IF NOT EXISTS public."ParkigTypes"
+CREATE TABLE IF NOT EXISTS public."RFIDsTypes"
 (
-    "ParkingTypeID" smallint NOT NULL,
-    "ParkingTypeName" character varying(20) NOT NULL,
-    "ParkingTypeDesc" text,
-    PRIMARY KEY ("ParkingTypeID")
+    "TypeID" smallint NOT NULL,
+    "TypeName" character varying(50) NOT NULL,
+    "isPortable" boolean NOT NULL,
+    PRIMARY KEY ("TypeID")
 );
 
-CREATE TABLE IF NOT EXISTS public."RFIDTypes"
+CREATE TABLE IF NOT EXISTS public."ParkingPlaceType"
 (
-    "RFIDTypeID" smallint NOT NULL,
-    "RFIDTypeIsPersonal" boolean NOT NULL,
-    "RFIDTypeName" character varying(20) NOT NULL,
-    PRIMARY KEY ("RFIDTypeID")
+    "TypeID" smallint NOT NULL,
+    "Name" character varying(50) NOT NULL,
+    "Description" text,
+    PRIMARY KEY ("TypeID")
 );
-
-CREATE TABLE IF NOT EXISTS public."Phones"
-(
-    "PhoneNum" integer NOT NULL,
-    "OwnerId" integer NOT NULL,
-    PRIMARY KEY ("PhoneNum", "OwnerId")
-);
-
-CREATE TABLE IF NOT EXISTS public."Journal"
-(
-    "Time" timestamp without time zone NOT NULL,
-    "OwnerID" integer NOT NULL,
-    "CarID" character varying(8) NOT NULL,
-    "InOut" boolean NOT NULL,
-    "ParkingPlaceID" smallint NOT NULL,
-    PRIMARY KEY ("Time")
-);
-
-COMMENT ON COLUMN public."Journal"."InOut"
-    IS 'true - In, false- out';
-
-ALTER TABLE public."Cars"
-    ADD FOREIGN KEY ("CarRFID")
-    REFERENCES public."RFIDs" ("RFIDid")
-    NOT VALID;
-
-
-ALTER TABLE public."Owners"
-    ADD FOREIGN KEY ("OwnerRFID")
-    REFERENCES public."RFIDs" ("RFIDid")
-    NOT VALID;
-
 
 ALTER TABLE public."Cars"
     ADD FOREIGN KEY ("CarOwnerID")
-    REFERENCES public."Owners" ("OwnerID")
+    REFERENCES public."Persons" ("PersonID")
     NOT VALID;
 
 
-ALTER TABLE public."Cars"
-    ADD FOREIGN KEY ("CarParkingPlaceID")
+ALTER TABLE public."CarsUsers"
+    ADD FOREIGN KEY ("Cars_CarRegNum")
+    REFERENCES public."Cars" ("CarRegNum")
+    NOT VALID;
+
+
+ALTER TABLE public."CarsUsers"
+    ADD FOREIGN KEY ("Persons_PersonID")
+    REFERENCES public."Persons" ("PersonID")
+    NOT VALID;
+
+
+ALTER TABLE public."Journal"
+    ADD FOREIGN KEY ("PersonID")
+    REFERENCES public."Persons" ("PersonID")
+    NOT VALID;
+
+
+ALTER TABLE public."Journal"
+    ADD FOREIGN KEY ("CarRegNum")
+    REFERENCES public."Cars" ("CarRegNum")
+    NOT VALID;
+
+
+ALTER TABLE public."Journal"
+    ADD FOREIGN KEY ("ParkingPlaceID")
     REFERENCES public."ParkingPlace" ("ParkingPlaceID")
     NOT VALID;
 
 
-ALTER TABLE public."Owners_Cars"
-    ADD FOREIGN KEY ("Owners_OwnerID")
-    REFERENCES public."Owners" ("OwnerID")
+ALTER TABLE public."RFIDs_Persons"
+    ADD FOREIGN KEY ("RecID")
+    REFERENCES public."RFIDs" ("RFIDid")
     NOT VALID;
 
 
-ALTER TABLE public."Owners_Cars"
-    ADD FOREIGN KEY ("Cars_CarRegNum")
-    REFERENCES public."Cars" ("CarRegNum")
+ALTER TABLE public."RFIDs_Persons"
+    ADD FOREIGN KEY ("RFIDs_RFIDid")
+    REFERENCES public."Persons" ("PersonID")
+    NOT VALID;
+
+
+ALTER TABLE public."Phones"
+    ADD FOREIGN KEY ("PersonID")
+    REFERENCES public."Persons" ("PersonID")
     NOT VALID;
 
 
@@ -144,38 +177,38 @@ ALTER TABLE public."Cars"
 
 
 ALTER TABLE public."ParkingPlace"
-    ADD FOREIGN KEY ("ParkingPlaceType")
-    REFERENCES public."ParkigTypes" ("ParkingTypeID")
+    ADD FOREIGN KEY ("ParkingPlaceTypeID")
+    REFERENCES public."ParkingPlaceType" ("TypeID")
     NOT VALID;
 
 
-ALTER TABLE public."RFIDs"
-    ADD FOREIGN KEY ("RFIDtype")
-    REFERENCES public."RFIDTypes" ("RFIDTypeID")
-    NOT VALID;
-
-
-ALTER TABLE public."Phones"
-    ADD FOREIGN KEY ("OwnerId")
-    REFERENCES public."Owners" ("OwnerID")
-    NOT VALID;
-
-
-ALTER TABLE public."Journal"
-    ADD FOREIGN KEY ("OwnerID")
-    REFERENCES public."Owners" ("OwnerID")
-    NOT VALID;
-
-
-ALTER TABLE public."Journal"
-    ADD FOREIGN KEY ("CarID")
+ALTER TABLE public."Cars_ParkingPlace"
+    ADD FOREIGN KEY ("CarRegNum")
     REFERENCES public."Cars" ("CarRegNum")
     NOT VALID;
 
 
-ALTER TABLE public."Journal"
+ALTER TABLE public."Cars_ParkingPlace"
     ADD FOREIGN KEY ("ParkingPlaceID")
     REFERENCES public."ParkingPlace" ("ParkingPlaceID")
+    NOT VALID;
+
+
+ALTER TABLE public."RFIDs_Cars"
+    ADD FOREIGN KEY ("RFIDs_RFIDid")
+    REFERENCES public."RFIDs" ("RFIDid")
+    NOT VALID;
+
+
+ALTER TABLE public."RFIDs_Cars"
+    ADD FOREIGN KEY ("Cars_CarRegNum")
+    REFERENCES public."Cars" ("CarRegNum")
+    NOT VALID;
+
+
+ALTER TABLE public."RFIDs"
+    ADD FOREIGN KEY ("RFIDtypeID")
+    REFERENCES public."RFIDsTypes" ("TypeID")
     NOT VALID;
 
 END;
