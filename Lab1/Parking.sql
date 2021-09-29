@@ -7,15 +7,14 @@ CREATE TABLE IF NOT EXISTS public."Cars"
 (
     "CarRegNum" character varying(8) NOT NULL,
     "CarMakeID" smallint NOT NULL,
-    "CarOwnerID" integer NOT NULL,
+    "CarType" smallint,
     PRIMARY KEY ("CarRegNum")
 );
 
 CREATE TABLE IF NOT EXISTS public."ParkingPlace"
 (
     "ParkingPlaceID" smallint NOT NULL,
-    "ParkingPlaceTypeID" smallint NOT NULL,
-    "IsFree" boolean NOT NULL,
+    "ParkingPlaceDesc" text,
     PRIMARY KEY ("ParkingPlaceID")
 );
 
@@ -25,64 +24,7 @@ CREATE TABLE IF NOT EXISTS public."Persons"
     "PersonLastName" character varying(50) NOT NULL,
     "PersonName" character varying(50) NOT NULL,
     "PersonMidleName" character varying(50),
-    "PersonPhones" character varying(100),
     PRIMARY KEY ("PersonID")
-);
-
-CREATE TABLE IF NOT EXISTS public."RFIDs"
-(
-    "RFIDid" bigint NOT NULL,
-    "RFIDtypeID" smallint NOT NULL,
-    "RFIDstatus" boolean NOT NULL,
-    PRIMARY KEY ("RFIDid")
-);
-
-CREATE TABLE IF NOT EXISTS public."Journal"
-(
-    "Time" timestamp without time zone NOT NULL,
-    "PersonID" integer NOT NULL,
-    "CarRegNum" character varying(8) NOT NULL,
-    "InOut" boolean NOT NULL,
-    "ParkingPlaceID" smallint NOT NULL
-);
-
-COMMENT ON COLUMN public."Journal"."InOut"
-    IS 'true - In, false- out';
-
-CREATE TABLE IF NOT EXISTS public."CarsUsers"
-(
-    "Cars_CarRegNum" character varying(8) NOT NULL,
-    "Persons_PersonID" integer NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS public."Cars_ParkingPlace"
-(
-    "RecID" integer NOT NULL,
-    "CarRegNum" character varying(8) NOT NULL,
-    "ParkingPlaceID" smallint NOT NULL,
-    "StartDate" date NOT NULL,
-    "EndDate" date,
-    PRIMARY KEY ("RecID")
-);
-
-CREATE TABLE IF NOT EXISTS public."RFIDs_Persons"
-(
-    "RecID" bigint NOT NULL,
-    "RFIDs_RFIDid" bigint NOT NULL,
-    "Persons_PersonID" integer NOT NULL,
-    "StartDate" date NOT NULL,
-    "EndDate" date,
-    PRIMARY KEY ("RecID")
-);
-
-CREATE TABLE IF NOT EXISTS public."RFIDs_Cars"
-(
-    "RecID" integer NOT NULL,
-    "RFIDs_RFIDid" bigint NOT NULL,
-    "Cars_CarRegNum" character varying(8) NOT NULL,
-    "StartDate" date NOT NULL,
-    "EndDate" date,
-    PRIMARY KEY ("RecID")
 );
 
 CREATE TABLE IF NOT EXISTS public."Phones"
@@ -100,69 +42,23 @@ CREATE TABLE IF NOT EXISTS public."Makes"
     PRIMARY KEY ("MakeID")
 );
 
-CREATE TABLE IF NOT EXISTS public."RFIDsTypes"
+CREATE TABLE IF NOT EXISTS public."Contract"
 (
-    "TypeID" smallint NOT NULL,
-    "TypeName" character varying(50) NOT NULL,
-    "isPortable" boolean NOT NULL,
-    PRIMARY KEY ("TypeID")
+    "ContractID" smallint NOT NULL,
+    "CarNumber" character varying(8) NOT NULL,
+    "PersonID" integer NOT NULL,
+    "ParkingID" smallint NOT NULL,
+    "ContractStart" date NOT NULL,
+    "ContractEnd" date NOT NULL,
+    PRIMARY KEY ("ContractID")
 );
 
-CREATE TABLE IF NOT EXISTS public."ParkingPlaceType"
+CREATE TABLE IF NOT EXISTS public."CarType"
 (
-    "TypeID" smallint NOT NULL,
-    "Name" character varying(50) NOT NULL,
-    "Description" text,
-    PRIMARY KEY ("TypeID")
+    "CarTypeID" smallint NOT NULL,
+    "CarTypeName" character varying NOT NULL,
+    PRIMARY KEY ("CarTypeID")
 );
-
-ALTER TABLE public."Cars"
-    ADD FOREIGN KEY ("CarOwnerID")
-    REFERENCES public."Persons" ("PersonID")
-    NOT VALID;
-
-
-ALTER TABLE public."CarsUsers"
-    ADD FOREIGN KEY ("Cars_CarRegNum")
-    REFERENCES public."Cars" ("CarRegNum")
-    NOT VALID;
-
-
-ALTER TABLE public."CarsUsers"
-    ADD FOREIGN KEY ("Persons_PersonID")
-    REFERENCES public."Persons" ("PersonID")
-    NOT VALID;
-
-
-ALTER TABLE public."Journal"
-    ADD FOREIGN KEY ("PersonID")
-    REFERENCES public."Persons" ("PersonID")
-    NOT VALID;
-
-
-ALTER TABLE public."Journal"
-    ADD FOREIGN KEY ("CarRegNum")
-    REFERENCES public."Cars" ("CarRegNum")
-    NOT VALID;
-
-
-ALTER TABLE public."Journal"
-    ADD FOREIGN KEY ("ParkingPlaceID")
-    REFERENCES public."ParkingPlace" ("ParkingPlaceID")
-    NOT VALID;
-
-
-ALTER TABLE public."RFIDs_Persons"
-    ADD FOREIGN KEY ("RecID")
-    REFERENCES public."RFIDs" ("RFIDid")
-    NOT VALID;
-
-
-ALTER TABLE public."RFIDs_Persons"
-    ADD FOREIGN KEY ("RFIDs_RFIDid")
-    REFERENCES public."Persons" ("PersonID")
-    NOT VALID;
-
 
 ALTER TABLE public."Phones"
     ADD FOREIGN KEY ("PersonID")
@@ -176,39 +72,27 @@ ALTER TABLE public."Cars"
     NOT VALID;
 
 
-ALTER TABLE public."ParkingPlace"
-    ADD FOREIGN KEY ("ParkingPlaceTypeID")
-    REFERENCES public."ParkingPlaceType" ("TypeID")
-    NOT VALID;
-
-
-ALTER TABLE public."Cars_ParkingPlace"
-    ADD FOREIGN KEY ("CarRegNum")
+ALTER TABLE public."Contract"
+    ADD FOREIGN KEY ("CarNumber")
     REFERENCES public."Cars" ("CarRegNum")
     NOT VALID;
 
 
-ALTER TABLE public."Cars_ParkingPlace"
-    ADD FOREIGN KEY ("ParkingPlaceID")
+ALTER TABLE public."Contract"
+    ADD FOREIGN KEY ("PersonID")
+    REFERENCES public."Persons" ("PersonID")
+    NOT VALID;
+
+
+ALTER TABLE public."Contract"
+    ADD FOREIGN KEY ("ParkingID")
     REFERENCES public."ParkingPlace" ("ParkingPlaceID")
     NOT VALID;
 
 
-ALTER TABLE public."RFIDs_Cars"
-    ADD FOREIGN KEY ("RFIDs_RFIDid")
-    REFERENCES public."RFIDs" ("RFIDid")
-    NOT VALID;
-
-
-ALTER TABLE public."RFIDs_Cars"
-    ADD FOREIGN KEY ("Cars_CarRegNum")
-    REFERENCES public."Cars" ("CarRegNum")
-    NOT VALID;
-
-
-ALTER TABLE public."RFIDs"
-    ADD FOREIGN KEY ("RFIDtypeID")
-    REFERENCES public."RFIDsTypes" ("TypeID")
+ALTER TABLE public."Cars"
+    ADD FOREIGN KEY ("CarType")
+    REFERENCES public."CarType" ("CarTypeID")
     NOT VALID;
 
 END;
