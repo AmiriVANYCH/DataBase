@@ -1,8 +1,10 @@
-import model_view_controller as mvc
+import view
+import model
+import controller
 
 
-#c = mvc.Controller(mvc.ModelBasic(), mvc.View())
-#c.show_make()
+c = controller.Controller(model.ModelBasic(), view.View())
+c.show_make()
 #c.create_make("Lanos")
 #c.update_make(17,"Mersedez","Mersedez")
 #c.del_make(18)

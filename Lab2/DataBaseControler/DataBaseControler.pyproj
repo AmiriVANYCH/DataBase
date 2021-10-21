@@ -24,9 +24,17 @@
     <Compile Include="basic_backend.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="controller.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DataBaseControler.py" />
-    <Compile Include="model_view_controller.py" />
+    <Compile Include="model.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="mvc_exceptions.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="view.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
