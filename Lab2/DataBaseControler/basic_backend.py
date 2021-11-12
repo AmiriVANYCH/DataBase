@@ -1,7 +1,7 @@
 import mvc_exceptions as mvc_exc
-import psycopg2
-from psycopg2 import Error
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import psycopg
+from psycopg import Error
+from psycopg.rows import dict_row
 
 items = list()
  
@@ -13,11 +13,7 @@ _cursor = None
 def get_connection():
     global _connection
     if not _connection:
-        _connection = psycopg2.connect(user="ivan",
-                              password="12345678",
-                              host="ubuntu.ivan.zeleniak.net",
-                              port="5432",
-                              database="Parking")
+        _connection = psycopg.connect("user=ivan password=12345678 host=ubuntu.ivan.zeleniak.net port=5432 dbname=Parking",row_factory=dict_row)
     return _connection
 
 
@@ -27,7 +23,7 @@ def get_cursor():
         return _cursor
     else:
         connection = get_connection()
-        _cursor = connection.cursor()
+        _cursor = connection.cursor(row_factory=dict_row)
         return _cursor
 
 
@@ -55,10 +51,10 @@ def create_make (makeName,MakeDescription=''):
     if cursor.rowcount == 0:
         query = 'INSERT INTO public."Makes"("MakeName", "MakeDescription")' + "VALUES ('"+ str(makeName)+"','"+ str(MakeDescription)+"');"
         cursor.execute(query)
-        makeid=cursor.lastrowid
+        
         _connection.commit()
     else:
-        makeid = record[0]
+        makeid = record["MakeID"]
     return makeid
 
 def read_make ():
@@ -105,6 +101,51 @@ def get_CarType_by_id (CarTypeID):
     record = cursor.fetchone()
     return record
 
+def create_temp_table():
+    cursor = get_cursor()
+    query = '''DROP TABLE IF EXISTS public."TMP_Contract";
+    CREATE TABLE IF NOT EXISTS public."TMP_Contract"
+    (
+    "ContractID" smallint NOT NULL,
+    "CarNumber" character varying(8) COLLATE pg_catalog."default" NOT NULL,
+    "PersonID" bigint NOT NULL,
+    "ParkingID" smallint NOT NULL,
+    "ContractStart" date NOT NULL,
+    "ContractEnd" date NOT NULL
+    );'''
+    cursor.execute(query)
+    _connection.commit()
+
+def del_contract_by_temp_table_CarNum(CarNum):
+    cursor = get_cursor()
+    query ='''insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "CarNumber"='''+CarNum  +''';
+    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" )
+    delete from public."Cars" where "CarRegNum" = ''' + CarNum + ";"+'''
+    delete from public."Persons" where "PersonID" in (select distinct "PersonID" from public."TMP_Contract" ) and "PersonID" not in (select distinct "PersonID" from public."Contract" where "PersonID"  in (select distinct "PersonID" from public."TMP_Contract" ) )'''
+
+    cursor.execute(query)
+    _connection.commit()
+    del_temp_table()
+
+def del_contract_by_temp_table_personID(personID):
+    cursor = get_cursor()
+    query ='''insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "PersonID"='''+personID  +''';
+    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" )
+    delete from public."Cars" where "CarRegNum" = (select distinct "CarRegNum" from public."TMP_Contract" )
+    delete from public."Persons" where "PersonID" = ''' + personID + ";"
+    cursor.execute(query)
+    _connection.commit()
+    del_temp_table()
+
+
+
+
+def del_temp_table():
+    cursor = get_cursor()
+    query ='''DROP TABLE IF EXISTS public."TMP_Contract";'''
+    cursor.execute(query)
+    _connection.commit()
+
 
 def create_CarType (CarTypeName):
     cursor = get_cursor()
@@ -112,15 +153,12 @@ def create_CarType (CarTypeName):
     if cursor.rowcount == 0:
         query = 'INSERT INTO public."CarType"("CarTypeName")' + "VALUES ('"+ str(CarTypeName)+"');"
         cursor.execute(query)
-        CarTypeid=cursor.lastrowid
         _connection.commit()
-    else:
-        CarTypeid = record[0]
-    return CarTypeid
+
 
 def read_CarType ():
     cursor = get_cursor()
-    query = 'SELECT "CarTypeID", "CarTypeName" FROM public."CarType";'
+    query = 'SELECT "CarTypeID", "CarTypeName" FROM public."CarType" ; '
     cursor.execute(query)
     _connection.commit()
     record = cursor.fetchall()
@@ -164,7 +202,7 @@ def create_Car (CarRegNum,CarMakeID,CarType):
     if cursor.rowcount == 0:
         query = 'INSERT INTO public."Cars"("CarRegNum", "CarMakeID" , "CarType")' + "VALUES ('"+ str(CarRegNum)+"',"+ str(CarMakeID)+","+ str(CarType) +"');"
         cursor.execute(query)
-        makeid=cursor.lastrowid
+        
         _connection.commit()
     else:
         makeid = record[0]
@@ -272,7 +310,7 @@ def create_person (PersonID, PersonLastName, PersonName,PersonMidleName):
     if cursor.rowcount == 0:
         query = 'INSERT INTO public."Persons"("PersonID", "PersonLastName", "PersonName" , "PersonMidleName" )' + "VALUES ('"+ str(PersonID), str(PersonLastName), str(PersonName),str(PersonMidleName) +"');"
         cursor.execute(query)
-        makeid=cursor.lastrowid
+        
         _connection.commit()
     else:
         makeid = record[0]
@@ -304,7 +342,7 @@ def del_person (PersonID):
         _connection.commit()
 
 #######Phones
-def get_phones_by_phones (Phone):
+def get_phones_by_phone (Phone):
     cursor = get_cursor()
     query = 'select * from public."Phones" where "Phone" ='+"'" + str(Phone)+"'"
     cursor.execute(query)
@@ -313,14 +351,31 @@ def get_phones_by_phones (Phone):
     return record
 
 
+def chek_parking_place(id):
+    cursor = get_cursor()
+    query = 'select "ParkingPlaceID", "ParkingPlaceDesc" from public."ParkingPlace" where "ParkingPlaceID" not in (select "ParkingID" from public."Contract" where "ContractEnd" >= (SELECT CURRENT_DATE)) and "ParkingPlaceID" = '+ str(id)
+    cursor.execute(query)
+    _connection.commit()
+    record = cursor.fetchone()
+    return record
+
+
+def get_free_parking_place():
+    cursor = get_cursor()
+    query = 'select "ParkingPlaceID", "ParkingPlaceDesc" from public."ParkingPlace" where "ParkingPlaceID" not in (select "ParkingID" from public."Contract" where "ContractEnd" >= (SELECT CURRENT_DATE))'
+    cursor.execute(query)
+    _connection.commit()
+    record = cursor.fetchall()
+    return record
+
 
 def create_phones (PersonID,Phone):
     cursor = get_cursor()
-    record = get_phones_by_phones(Phone)
+    record = get_phones_by_phone(Phone)
     if cursor.rowcount == 0:
         query = 'INSERT INTO public."Phones"("PersonID", "Phone")' + "VALUES ('"+ str(PersonID)+"','"+ str(Phone)+"');"
         cursor.execute(query)
-        makeid=cursor.lastrowid
+        
         _connection.commit()
     else:
         makeid = record[0]
@@ -361,6 +416,29 @@ def get_contract_by_PersonID (PersonID):
     record = cursor.fetchone()
     return record
 
+def clear_data():
+    cursor = get_cursor()
+    query = ''' select '' as  "ContractID", '' as "CarNumber", '' as "ParkingID", '' as "PersonID", '' as "ContractStart", '' as "ContractEnd", '' as "CarMakeID", '' as "CarType", '' as "CarTypeName", '' as "MakeName", '' as "PersonLastName", '' as "PersonName", '' as "PersonMidleName"'''
+    cursor.execute(query)
+    _connection.commit()
+    record = cursor.fetchone()
+    return record
+
+
+def get_currentContract_by_carRegNum(CarNumber):
+    cursor = get_cursor()
+    query = '''select "ContractID", "CarNumber", "ParkingID", "Contract"."PersonID" as "PersonID", "ContractStart", "ContractEnd","CarMakeID","CarType", "CarTypeName", "MakeName", "PersonLastName", "PersonName", "PersonMidleName"
+                from public."Contract" 
+	                INNER JOIN public."Cars" on public."Contract"."CarNumber" = public."Cars"."CarRegNum" 
+	                INNER JOIN public."CarType" on public."Cars"."CarType" = public."CarType"."CarTypeID"
+	                INNER JOIN public."Makes" on public."Makes"."MakeID" = public."Cars"."CarMakeID"
+	                INNER JOIN public."Persons" on public."Persons"."PersonID" = public."Contract"."PersonID"
+	            where "ContractID"=(select max("ContractID") from public."Contract" where "CarNumber" = \'''' + str(CarNumber)+"')"
+    cursor.execute(query)
+    _connection.commit()
+    record = cursor.fetchone()
+    return record
+
 
 def get_contract_by_ParkingID (ParkingID):
     cursor = get_cursor()
@@ -380,13 +458,19 @@ def get_contract_by_ContractID (ContractID):
     return record
 
 
-def create_contract (CarNumber,PersonID,ParkingID,ContractStart,ContractEnd):
+def create_contract (CarNumber,PersonID,ParkingID,days):
     cursor = get_cursor()
-    query = 'INSERT INTO public."Contract"("CarNumber","PersonID","ParkingID","ContractStart","ContractEnd")' + "VALUES ('"+ str(CarNumber),str(PersonID),str(ParkingID),str(ContractStart),str(ContractEnd)+"');"
+    query = 'INSERT INTO public."Contract"("CarNumber","PersonID","ParkingID","ContractStart","ContractEnd")' + "VALUES ('"+ str(CarNumber)+"',"+str(PersonID)+","+str(ParkingID)+","+"(SELECT CURRENT_DATE) " +","+"(SELECT CURRENT_DATE +"+str(days)+"));"
     cursor.execute(query)
-    makeid=cursor.lastrowid
+    
     _connection.commit()
     return makeid
+
+def close_contract(ContractID):
+     cursor = get_cursor()
+     query = 'UPDATE public."Contract"	SET  "ContractEnd"= (SELECT CURRENT_DATE-1)  WHERE "ContractID" = '+ str(ContractID)+ ' ;'
+     cursor.execute(query)
+     _connection.commit()
 
 def read_contract ():
     cursor = get_cursor()

@@ -1,11 +1,259 @@
 import basic_backend
 import mvc_exceptions as mvc_exc
+import datetime
 
 class Controller(object):
+
+    data = None
 
     def __init__(self, model, view):
         self.model = model
         self.view = view
+
+    def query(self,str):
+        self.view.query(str)
+
+    def fill_day_info(self):
+        self.view.print_day_querty()
+        self.data["days"] = self.view.get_int()
+
+    def clear_data(self):
+        self.data = self.model.clear_data()
+
+
+    def fill_contract(self):
+        Carnum= self.get_car_num()
+        self.data = self.get_currentContract_by_carRegNum(Carnum)
+        if self.data:
+            self.view.print_contract(self.data)
+            cose = self.view.get_int()
+            if cose == "0":
+                return
+            elif cose == "1":
+
+                self.fill_parking_info()
+                self.fill_day_info()
+                self.create_contract()
+        else:
+            
+            self.clear_data()
+            self.fill_avto()
+            self.fill_parking_info()
+            self.fill_person_info()
+            self.fill_day_info()
+            self.create_contract()
+
+    def run(self):
+        cose = self.view.get_main_menu_sel()
+        if cose == "1":
+            self.fill_contract()
+            
+        if cose == "2":
+            self.make_control()
+        
+        if cose == "3":
+            self.CarType_control()
+
+    def make_control(self):
+        self.clear_data()
+        cose = self.view.get_make_menu()
+        if cose == "1":
+            self.view.print_make_control_MakeType()
+            self.data["MakeName"] = self.view.get_str()
+            self.view.print_make_control_MakeDiscription()
+            self.data["MakeDescription"] = self.view.get_str()
+            self.save_make()
+        if cose == "2":
+            self.show_make()
+            self.view.print_make_control_del_masseg()
+            cose = self.view.get_str()
+            if self.get_make_by_id(cose):
+                self.del_make(cose)
+                return
+        if cose == "3":
+            self.show_make()
+            self.view.print_make_control_MakeID()
+            self.data["MakeID"] = self.view.get_str()
+            self.view.print_make_control_MakeType()
+            self.data["MakeName"] = self.view.get_str()
+            self.view.print_make_control_MakeDiscription()
+            self.data["MakeDescription"] = self.view.get_str()
+            self.save_make(True)
+
+    
+
+    def CarType_control(self):
+        self.clear_data()
+        cose = self.view.get_type_menu()
+        if cose == "1":
+            self.view.print_carType_control_CarTypeName()
+            self.data["CarTypeName"] = self.view.get_str()
+            self.save_carType()
+        if cose == "2":
+            self.show_CarType()
+            self.view.print_car_type_control_del_masseg()
+            cose = self.view.get_int()
+            if self.get_CarType_by_id(cose):
+                self.del_CarType(cose)
+                return
+        if cose == "3":
+            self.show_CarType()
+            self.view.print_carType_control_CarTypeID()
+            self.data["CarTypeID"] = self.view.get_str()
+            self.view.print_carType_control_CarTypeName()
+            self.data["CarTypeName"] = self.view.get_str()
+            self.save_carType(True)
+
+
+
+
+    def fill_person_info(self):
+        self.data["PersonID"] = self.get_person_code()
+        resalt = self.get_person_by_id(self.data["PersonID"])
+        if resalt:
+            self.view.print_person_masseg(resalt)
+            cose = get_int()
+            if cose == "0":
+                return -1
+            if cose == "1":
+                self.data["PersonID"] = resalt["PersonID"]
+                self.data["PersonLastName"] = resalt["PersonLastName"]
+                self.data["PersonMidleName"] = resalt["PersonMidleName"]
+                self.data["PersonName"] = resalt["PersonName"]
+        else:
+            self.view.print_person_masseg_LName()
+            self.data["PersonLastName"] = self.Get_Name()
+            self.view.print_person_masseg_Name()
+            self.data["PersonName"] = self.Get_Name()
+            self.view.print_person_masseg_MName()
+            self.data["PersonMidleName"] = self.Get_Name()
+        self.view.show_FIO(self.data["PersonLastName"],self.data["PersonName"], self.data["PersonMidleName"])
+        cose = self.view.get_int()
+        if cose == "1":
+            return 1
+        if cose == "0":
+            self.fill_person_info()
+
+
+    def fill_make(self):
+        self.show_make()
+        self.view.print_make_type()
+        self.data["CarMake"] = self.view.get_int()
+        while self.data["CarMake"] != "0"  and not self.get_make_by_id(self.data["CarMake"]):
+            self.view.print_make_type_error()
+            self.data["CarMake"] = self.view.get_int()
+        if self.data["CarMake"] == "0":
+            return -1
+        return 1
+
+    def fill_car_type(self):
+        self.show_CarType()
+        self.view.print_car_type()
+        self.data["CarType"] = self.view.get_int()
+        while self.data["CarType"] != "0" and not self.get_CarType_by_id(self.data["CarType"]):
+            self.view.print_car_type_error()
+            self.data["CarType"] = self.view.get_int()
+        if self.data["CarType"] == "0":
+            return -1
+        return 1
+
+    def fill_avto(self):
+        self.fill_make()
+        self.fill_car_type()
+
+
+
+
+    def Get_Name(self):
+        chars = "йцукенгшщзхїфівапролджєячсмитьбю"
+        charMas = "ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ"
+        name = self.view.get_str()
+        if name:
+            if name[0] not in charMas:
+                self.view.print_error_name_query()
+                return
+
+            if name :
+                for char in name[1:len(name)-1]:
+                    if char.isalpha() or (char in chars) :
+                        continue
+                    else:
+                       self.view.print_error_name_query()
+                       item = Get_Name()
+                       return item 
+            else:
+                print_error_name_query()
+                item = Get_Name()
+                return item
+        return name
+
+
+    def fill_parking_info(self):
+        self.show_parking_place()
+        self.view.print_parking_place_query()
+        ParkingID = self.view.get_int()
+        if 'ParkingID' in self.data:
+            while self.chek_parking_place(ParkingID):
+                self.view.print_parking_place_error()
+                ParkingID = input()
+                if ParkingID == "0":
+                    return -1
+        self.data["ParkingID"] = ParkingID
+        return 1
+
+
+
+    def get_person_code(self):
+        self.view.print_code_query()
+        code = self.view.get_int()
+        if len(code) == 10:
+            return code
+        else:
+            self.view.print_error_code_query()
+            return
+
+    def get_car_num(self):
+        self.view.print_car_num_query()
+        chars= "QWERTYUIOPASDFGHJKLZXCVBNM1234567890"
+        num= self.view.get_str()
+        for char in num:
+            if char in chars:
+                continue
+            else:
+                self.view.print_error_car_num_query()
+                return
+        if len(num) == 8:
+            return num
+        else:
+            self.view.print_error_car_num_query()
+            return
+
+    def save_car(self,update=False):
+        if update:
+            self.update_Car(self.data["CarNumber"],self.data["CarMakeID"],self.data["CarType"])
+            return
+        if "CarNumber" in self.data:
+            if not self.get_Car_by_Reg_num(self.data["CarNumber"]):
+                self.create_Car(self.data["CarNumber"],self.data["CarMakeID"],self.data["CarType"])
+                return
+
+    def save_make(self,update=False):
+        if update:
+            self.update_make(self.data["MakeID"],self.data["MakeName"],self.data["MakeDescription"])
+            return
+        if self.data["MakeName"] != '':
+            if not self.get_make_by_name(self.data["MakeName"]):
+                self.create_make(self.data["MakeName"],self.data["MakeDescription"])
+                return
+
+    def save_carType(self,update=False):
+        if update:
+            self.update_CarType(self.data["CarTypeID"],self.data["CarTypeName"])
+            return
+        if self.data["CarTypeName"] !="":
+                self.create_CarType(self.data["CarTypeName"])
+                return
+
 
     def show_make(self):
         items = self.model.read_make()
@@ -15,7 +263,13 @@ class Controller(object):
         #try:
             item = self.model.get_make_by_name(Makes_name)
             #self.view.show_item(item_type, item_name, item)
-        #except mvc_exc.ItemNotStored as e:
+        #except mvc_exself.ItemNotStored as e:
+            #self.view.display_missing_item_error(item_name, e)
+    def get_make_by_id(self, MakesID):
+            item = self.model.get_make_by_id(MakesID)
+            return item
+            #self.view.show_item(item_type, item_name, item)
+        #except mvc_exself.ItemNotStored as e:
             #self.view.display_missing_item_error(item_name, e)
 
     def create_make(self, MakeName,MakeDescription):
@@ -23,7 +277,7 @@ class Controller(object):
         #try:
         self.model.create_make(MakeName,MakeDescription)
             #self.view.display_item_stored(name, item_type)
-        #except mvc_exc.ItemAlreadyStored as e:
+        #except mvc_exself.ItemAlreadyStored as e:
             #self.view.display_item_already_stored_error(name, item_type, e)
 
     def update_make(self,MakeID,MakeName,MakeDescription):
@@ -31,7 +285,7 @@ class Controller(object):
         #try:
         self.model.update_make (MakeID,MakeName,MakeDescription)
             #self.view.display_item_updated(name, older['price'], older['quantity'], price, quantity)
-        #except mvc_exc.ItemNotStored as e:
+        #except mvc_exself.ItemNotStored as e:
             #self.view.display_item_not_yet_stored_error(name, item_type, e)
             # if the item is not yet stored and we performed an update, we have
             # 2 options: do nothing or call insert_item to add it.
@@ -41,27 +295,29 @@ class Controller(object):
         #try:
         self.model.del_make (MakeID)
             #self.view.display_item_deletion(name)
-        #except mvc_exc.ItemNotStored as e:
+        #except mvc_exself.ItemNotStored as e:
             #self.view.display_item_not_yet_stored_error(name, item_type, e)
 
 ###Type
 
-    def get_CarType_by_name (self,CarTypeName):
-        return self.model.get_CarType_by_name (CarTypeName)
+    def show_CarType(self):
+        items = self.model.read_CarType()
+        self.view.show_items(items)
     
     
     def get_CarType_by_id (self,CarTypeID):
 
-        return self.model.get_CarType_by_id (CarTypeID)
+        items = self.model.get_CarType_by_id(CarTypeID)
+        return items
         
     
     
     def create_CarType (self,CarTypeName):
-        return self.model.create_CarType (CarTypeName)
+        items = self.model.create_CarType (CarTypeName)
+
         
     
-    def read_CarType (self):
-        return self.model.read_CarType ()
+
         
     def update_CarType(self,CarTypeID,CarTypeName):
         self.model.update_CarType(CarTypeID,CarTypeName)
@@ -74,18 +330,17 @@ class Controller(object):
 ########Cars
     
     def get_Car_by_Reg_num (self,CarRegNum):
-        self.model.get_Car_by_Reg_num (CarRegNum)
-        
-    
-    
-    
-    
+         items = self.model.get_Car_by_Reg_num (CarRegNum)
+         self.view.show_items(items)
+
     def create_Car (self,CarRegNum,CarMakeID,CarType):
-        self.model.create_Car (CarRegNum,CarMakeID,CarType)
+         items = self.model.create_Car (CarRegNum,CarMakeID,CarType)
+         self.view.show_items(items)
         
     
-    def read_Car (self,):
-        self.model.read_Car ()
+    def show_Car (self,):
+         items = self.model.read_Car ()
+         self.view.show_items(items)
         
     
     def update_Car (self,CarRegNum,CarMakeID,CarType):
@@ -102,16 +357,25 @@ class Controller(object):
     
     
     def get_parking_place_by_id (self,ParkingPlaceID):
-        self.model.get_parking_place_by_id (ParkingPlaceID)
-        
-    
+         items = self.model.get_parking_place_by_id (ParkingPlaceID)
+         self.view.show_items(items)
+      
+
+    def chek_parking_place(self,id):
+        items = self.model.chek_parking_place (id)
+        if items:
+            return False
+        else:
+            return True
     
     def create_parking_place (self,ParkingPlaceID,ParkingPlaceDesc):
-        self.model.create_parking_place (ParkingPlaceID,ParkingPlaceDesc)
+         items = self.model.create_parking_place (ParkingPlaceID,ParkingPlaceDesc)
+         self.view.show_items(items)
         
     
-    def read_parking_place (self,):
-        self.model.read_parking_place ()
+    def show_parking_place (self,):
+         items = self.model.read_parking_place ()
+         self.view.print_table(items,2)
         
     
     def update_parking_place (self,ParkingPlaceID,ParkingPlaceDesc):
@@ -127,21 +391,25 @@ class Controller(object):
     
     
     def get_person_by_last_name (self,PersonLastName):
-        self.model.get_person_by_last_name (PersonLastName)
+         items = self.model.get_person_by_last_name (PersonLastName)
+         self.view.show_items(items)
         
     
     
     def get_person_by_id (self,PersonID):
-        self.model.get_person_by_id (PersonID)
+         items = self.model.get_person_by_id (PersonID)
+         return items
         
     
     
     def create_person (self,PersonID, PersonLastName, PersonName,PersonMidleName):
-        self.model.create_person (PersonID, PersonLastName, PersonName,PersonMidleName)
+         items = self.model.create_person (PersonID, PersonLastName, PersonName,PersonMidleName)
+         self.view.show_items(items)
         
     
-    def read_person (self,):
-        self.model.read_person ()
+    def show_person (self,):
+         items = self.model.read_person ()
+         self.view.show_items(items)
         
     
     def update_person (self,PersonID, PersonLastName, PersonName,PersonMidleName):
@@ -155,16 +423,18 @@ class Controller(object):
     
     #######Phones
     def get_phones_by_phones (self,Phone):
-        self.model.get_phones_by_phones (Phone)
+         items = self.model.get_phones_by_phones (Phone)
+         self.view.show_items(items)
         
     
     
     
     def create_phones (self,PersonID,Phone):
-        self.model.create_phones (PersonID,Phone)
+         items = self.model.create_phones (PersonID,Phone)
+         self.view.show_items(items)
         
     
-    def read_phones (self,):
+    def show_phones (self,):
         self.model. read_phones ()
         
     
@@ -180,26 +450,33 @@ class Controller(object):
     ####### Contracts
     
     def get_contract_by_PersonID (self,PersonID):
-        self.model.get_contract_by_PersonID (PersonID)
+         items = self.model.get_contract_by_PersonID (PersonID)
+         self.view.show_items(items)
         
-    
+    def get_currentContract_by_carRegNum(self,CarNumber):
+        items = self.model.get_currentContract_by_carRegNum (CarNumber)
+        return items
     
     def get_contract_by_ParkingID (self,ParkingID):
-        self.model.get_contract_by_ParkingID (ParkingID)
+         items = self.model.get_contract_by_ParkingID (ParkingID)
+         self.view.show_items(items)
        
     
     
     def get_contract_by_ContractID (self,ContractID):
-        self.model.get_contract_by_ContractID (ContractID)
+         items = self.model.get_contract_by_ContractID (ContractID)
+         self.view.show_items(items)
+        
+    def close_contract(self,id):
+        self.model.close_contract(id)
+    
+    def create_contract (self):
+        self.save_car()
         
     
-    
-    def create_contract (self,CarNumber,PersonID,ParkingID,ContractStart,ContractEnd):
-        self.model.create_contract (CarNumber,PersonID,ParkingID,ContractStart,ContractEnd)
-        
-    
-    def read_contract (self,):
-        self.model.read_contract (self,)
+    def show_contract (self,):
+         items = self.model.read_contract ()
+         self.view.show_items(items)
         
     
     def update_contract (self,ContractID,CarNumber,PersonID,ParkingID,ContractStart,ContractEnd):

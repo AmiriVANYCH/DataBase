@@ -29,6 +29,8 @@ class ModelBasic(object):
     def del_make (self , MakeID):
         basic_backend.del_make (MakeID)
 
+
+
 ##############Type
 
 
@@ -118,8 +120,13 @@ class ModelBasic(object):
     
     def get_person_by_id (self,PersonID):
         return basic_backend.get_person_by_id (PersonID)
+
+    def get_free_parking_place(self):
+        return basic_backend.get_free_parking_place()
+
         
-    
+    def chek_parking_place(self,id):
+        return basic_backend.chek_parking_place(id)
     
     def create_person (self,PersonID, PersonLastName, PersonName,PersonMidleName):
         return basic_backend.create_person (PersonID, PersonLastName, PersonName,PersonMidleName)
@@ -167,24 +174,29 @@ class ModelBasic(object):
     def get_contract_by_PersonID (self,PersonID):
         return basic_backend.get_contract_by_PersonID (PersonID)
         
-    
+    def get_currentContract_by_carRegNum(self,carRegNum):
+        return basic_backend.get_currentContract_by_carRegNum(carRegNum)
     
     def get_contract_by_ParkingID (self,ParkingID):
         return basic_backend.get_contract_by_ParkingID (ParkingID)
        
-    
+    def close_contract(self,id):
+        basic_backend.close_contract(id)
     
     def get_contract_by_ContractID (self,ContractID):
         return basic_backend.get_contract_by_ContractID (ContractID)
+    
+    
+    def clear_data(self):
+        return basic_backend.clear_data()
         
     
-    
-    def create_contract (self,CarNumber,PersonID,ParkingID,ContractStart,ContractEnd):
-        return basic_backend.create_contract (CarNumber,PersonID,ParkingID,ContractStart,ContractEnd)
+    def create_contract (self,CarNumber,PersonID,ParkingID,ContractEnd):
+        return basic_backend.create_contract (CarNumber,PersonID,ParkingID,ContractEnd)
         
     
     def read_contract (self,):
-        return basic_backend.read_contract (self,)
+        return basic_backend.read_contract ()
         
     
     def update_contract (self,ContractID,CarNumber,PersonID,ParkingID,ContractStart,ContractEnd):
@@ -192,7 +204,12 @@ class ModelBasic(object):
         
     
     
-    def del_contract (self,ContractID):
-        basic_backend.del_contract (ContractID)
+    def create_temp_table():
+        basic_backend.create_temp_table
 
+    def del_contract_by_temp_table_CarNum(CarNum):
+        basic_backend.del_contract_by_temp_table_CarNum(CarNum)
+
+    def del_contract_by_temp_table_personID(personID):
+        basic_backend.del_contract_by_temp_table_personID(personID)
 ######
