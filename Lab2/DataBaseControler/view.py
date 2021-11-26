@@ -11,9 +11,7 @@ class View(object):
     def query(str):
         print(str)
     def show_FIO(self,LName,Name,MName):
-        print("Введено:")
         print(LName +" "+ Name +" "+ MName)
-        print("Підтвердити \n  0 - ні    1 - так ")
     def print_name_query(self):
         print("Введіть імя")
 
@@ -27,7 +25,7 @@ class View(object):
         print("Введено неправильний код")
 
     def print_car_num_query(self):
-        print("Введено нномер машини")
+        print("Введіть номер машини")
 
     def print_error_car_num_query(self):
         print("Введено неправильний код")
@@ -61,7 +59,6 @@ class View(object):
 
     def print_person_masseg(self,user):
         print("Знайдений користувач")
-        print(user)
 
     def print_person_masseg_LName(self):
         print("Введіть фамілію")
@@ -74,7 +71,7 @@ class View(object):
 
 
     def get_int(self):
-        int = input()
+        int = input(">>>")
         if int.isdigit():
             return int
         else:
@@ -83,6 +80,11 @@ class View(object):
         print("Знайдено контракт за цим номером.")
         print(contract)
         print("Ви можете змінити тільки паркомісце\n 0 - ні    1 - так ")
+    
+
+    def print_parking_info(self,items):
+        for item in items:
+            print(" "+str(item['ParkingPlaceID'])+ " ,",end = "")
 
     def print_table(self,rows,cols):
         lenth = len(rows)
@@ -95,8 +97,9 @@ class View(object):
                     print(rows[i+j*row_num], end='')
                     print("   ", end='')
             print('')
-
-
+    def random_create_mess(self):
+        print("Введіть кількість контрактів для створення")
+        return self.get_int()
 
     def get_main_menu_sel(self):
         start = '''Початкове меню
@@ -104,20 +107,17 @@ class View(object):
         1 - Додати договір
         2 - Курувати виробниками авто
         3 - Керувати типами авто
-        4 - Керувати власниками авто
-        5 - Керувати авто
-        4 - Пошук
+        4 - Видалити контракт 
+        5 - Створити пакетно багато контрактів
 
-
-        
         '''
         start = start.split("\n")
-        print("****************************************")
+        print("*"*57)
         for line in start:
-            print("*"+" "*5+line+" "*(33-len(line)) +"*")
-        print("****************************************")
-        cose = input()
-        return cose
+            print("*"+" "*5+line+" "*(50-len(line)) +"*")
+        print("*"*57)
+        
+        return self.get_int()
     def search_menu ():
         start = '''
         1 - Знайти договір за номером телефону
@@ -125,15 +125,17 @@ class View(object):
         3 - Знайти договір за власником авто
         4 - Знайти договір за номером авто
         5 - Знайти договір за періодом підписання
-        6 - Знайти договір за періодом завершення10 - Знайти договір за кількістю активних днів
+        6 - Знайти договір за періодом завершення
         7 - Знайти договір за вільними параметрами'''
         start = start.split("\n")
         print("****************************************")
         for line in start:
             print("*"+" "*5+line+" "*(33-len(line)) +"*")
         print("****************************************")
-        cose = input()
-        return cose
+
+        return self.get_int()
+
+    
     def get_make_menu(self):
         start = '''Меню марок
         
@@ -146,8 +148,8 @@ class View(object):
         for line in start:
             print("*"+" "*5+line+" "*(33-len(line)) +"*")
         print("****************************************")
-        cose = input()
-        return cose
+        
+        return self.get_int()
 
     def get_type_menu(self):
         start = '''Меню типів авто
@@ -161,11 +163,11 @@ class View(object):
         for line in start:
             print("*"+" "*5+line+" "*(33-len(line)) +"*")
         print("****************************************")
-        cose = input()
-        return cose
+        
+        return self.get_int()
 
     def get_str(self):
-        str = input()
+        str = input(">>>")
         return str
     def get_free_parking_place(self,parking_place):
         self.view.show_items(items)
@@ -176,12 +178,41 @@ class View(object):
     def print_car_type_control_del_masseg(self):
         print("Введіть айді типу авто який хочете видалити")
 
-    @staticmethod
-    def show_items( items):
-        print('//////////////////////////////////////////////////////////////')
+
+    def show_items(self, items):
+        for key in items[0].keys():
+            print("__"+"_"*20,end='')
+        print(" ")
+        for key in items[0].keys():
+            print("| "+ str(key) + " "*(20-len(str(key))),end='')
+        print("|")
+        for key in items[0].keys():
+            print("|_"+"_"*20,end='')
+        print("|")
         for item in items:
-            print(item)
-        print('//////////////////////////////////////////////////////////////')
+            for key in item.keys():
+                print("| "+ str(item[key]) + " "*(20-len(str(item[key]))),end='')
+            print("|")
+        for key in items[0].keys():
+            print("|_"+"_"*20,end='')
+        print("|")
+        
+    def show_item(self, item):
+        for key in item.keys():
+            print("__"+"_"*20,end='')
+        print(" ")
+        for key in item.keys():
+            print("| "+ str(key) + " "*(20-len(str(key))),end='')
+        print("|")
+        for key in item.keys():
+            print("|_"+"_"*20,end='')
+        print("|")
+        for key in item.keys():
+            print("| "+ str(item[key]) + " "*(20-len(str(item[key]))),end='')
+        print("|")
+        for key in item.keys():
+            print("|_"+"_"*20,end='')
+        print("|")
 
     def print_make_control_MakeType(self):
         print("Введіть назву марки ")
@@ -199,3 +230,22 @@ class View(object):
 
     def print_car_type_control_del_masseg(self):
         print("Введіть айді типу авто який хочете видалити")
+
+
+    def del_masseg(self):
+        print("Виберіть за чим буде проводитися видалення\n\t\t1 - За номером контракту\n\t\t2 - За номером автомобыля\n\t\t3 -  За ідентифікаційним номером ")
+        return self.get_int()
+    
+    def del_masseg_contract_id(self):
+        print("Введіть номер контракту")
+        return self.get_int()
+
+
+    def del_masseg_regnum(self):
+        print("Введіть номер автівки")
+        return self.get_str()
+
+    def del_masseg_person_id(self):
+        print("Введіть ідентифікаційний номер")
+        return self.get_int()
+

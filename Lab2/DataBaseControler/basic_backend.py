@@ -101,9 +101,24 @@ def get_CarType_by_id (CarTypeID):
     record = cursor.fetchone()
     return record
 
-def create_temp_table():
+
+def del_contract_by_temp_table_CarNum(CarNum):
     cursor = get_cursor()
-    query = '''DROP TABLE IF EXISTS public."TMP_Contract";
+    query ='''DROP TABLE IF EXISTS public."TMP_Contract";
+    CREATE TABLE IF NOT EXISTS public."TMP_Contract"("ContractID" smallint NOT NULL,"CarNumber" character varying(8) COLLATE pg_catalog."default" NOT NULL,"PersonID" bigint NOT NULL,"ParkingID" smallint NOT NULL,"ContractStart" date NOT NULL,"ContractEnd" date NOT NULL);
+   insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "CarNumber" =  /' '''+ str(CarNum)+ ''' /'' ;
+    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" );
+    delete from public."Cars" where "CarRegNum" =  /' '''+ str(CarNum)+ ''' /';
+    delete from public."Persons" where "PersonID" in (select distinct "PersonID" from public."TMP_Contract" ) and "PersonID" not in (select distinct "PersonID" from public."Contract" where "PersonID"  in (select distinct "PersonID" from public."TMP_Contract" ) );
+    DROP TABLE public."TMP_Contract";'''
+
+    cursor.execute(query)
+    _connection.commit()
+
+def del_contract_by_temp_table_ContractID(ContractID):
+    _connection= get_connection()
+    cursor = get_cursor()
+    query ='''DROP TABLE IF EXISTS public."TMP_Contract";
     CREATE TABLE IF NOT EXISTS public."TMP_Contract"
     (
     "ContractID" smallint NOT NULL,
@@ -112,39 +127,86 @@ def create_temp_table():
     "ParkingID" smallint NOT NULL,
     "ContractStart" date NOT NULL,
     "ContractEnd" date NOT NULL
-    );'''
-    cursor.execute(query)
-    _connection.commit()
-
-def del_contract_by_temp_table_CarNum(CarNum):
-    cursor = get_cursor()
-    query ='''insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "CarNumber"='''+CarNum  +''';
-    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" )
-    delete from public."Cars" where "CarRegNum" = ''' + CarNum + ";"+'''
-    delete from public."Persons" where "PersonID" in (select distinct "PersonID" from public."TMP_Contract" ) and "PersonID" not in (select distinct "PersonID" from public."Contract" where "PersonID"  in (select distinct "PersonID" from public."TMP_Contract" ) )'''
+    );
+    insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "ContractID"='''+str(ContractID)  +''';
+    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" );
+    delete from public."Cars" where "CarRegNum" in (select distinct "CarRegNum" from public."TMP_Contract" ) and "CarRegNum" not in (select distinct "CarRegNum" from public."Contract" where "CarRegNum" in (select distinct "CarRegNum" from public."TMP_Contract" ) );
+    delete from public."Persons" where "PersonID" in (select distinct "PersonID" from public."TMP_Contract" ) and "PersonID" not in (select distinct "PersonID" from public."Contract" where "PersonID"  in (select distinct "PersonID" from public."TMP_Contract" ) );
+    DROP TABLE public."TMP_Contract";'''
 
     cursor.execute(query)
     _connection.commit()
-    del_temp_table()
 
 def del_contract_by_temp_table_personID(personID):
+    _connection= get_connection()
     cursor = get_cursor()
-    query ='''insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "PersonID"='''+personID  +''';
-    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" )
-    delete from public."Cars" where "CarRegNum" = (select distinct "CarRegNum" from public."TMP_Contract" )
-    delete from public."Persons" where "PersonID" = ''' + personID + ";"
+    query ='''DROP TABLE IF EXISTS public."TMP_Contract";
+    CREATE TABLE IF NOT EXISTS public."TMP_Contract"("ContractID" bigint NOT NULL,"CarNumber" character varying(8) COLLATE pg_catalog."default" NOT NULL,"PersonID" bigint NOT NULL,"ParkingID" smallint NOT NULL,"ContractStart" date NOT NULL,"ContractEnd" date NOT NULL);
+   insert into public."TMP_Contract" ("ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd") select "ContractID","PersonID","CarNumber","ParkingID","ContractStart","ContractEnd" from public."Contract" where "PersonID"= ''' +str(personID)+  ''';
+    delete from public."Contract" where "ContractID" in (select distinct "ContractID" from public."TMP_Contract" );
+    delete from public."Cars" where "CarRegNum" in (select distinct "CarRegNum" from public."TMP_Contract" ) and "CarRegNum" not in (select distinct "CarRegNum" from public."Contract" where "CarRegNum"  in (select distinct "CarRegNum" from public."TMP_Contract" ) );
+   delete from public."Persons" where "PersonID" =  ''' +str(personID)+  ''';
+    DROP TABLE public."TMP_Contract";'''
     cursor.execute(query)
     _connection.commit()
-    del_temp_table()
 
 
-
-
-def del_temp_table():
+def random_create(value):
     cursor = get_cursor()
-    query ='''DROP TABLE IF EXISTS public."TMP_Contract";'''
+    query = "CALL public.generate_data("+str(value)+");"
     cursor.execute(query)
     _connection.commit()
+    #CREATE OR REPLACE PROCEDURE generate_data(dataCount integer)
+    #AS $$
+    #
+    #DECLARE 
+    #  i SMALLINT;
+    #  Persons RECORD;
+    #  CarNum text;
+    #
+    #BEGIN
+    #  INSERT INTO public."Persons" ("PersonID","PersonLastName","PersonMidleName","PersonName")
+    #    SELECT floor(10000000000+random()*89999999999)::bigint,
+    #      chr(floor(65 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int),
+    #      chr(floor(65 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int),
+    #      chr(floor(65 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int) || chr(floor(97 + random()*25)::int) ||
+    #      chr(floor(97 + random()*25)::int)
+    #    FROM generate_series(1, dataCount);
+    #
+    #  FOR Persons IN 
+    #      SELECT "PersonID" from public."Persons" where "PersonID" not in (SELECT DISTINCT "PersonID" from public."Contract")
+    #     LOOP
+    #      CarNum :=(chr(floor(65 + random()*25)::int) ||
+    #      chr(floor(65 + random()*25)::int) || floor( random()*9)::int ||
+    #      floor( random()*9)::int || floor( random()*9)::int || floor( random()*9)::int || chr(floor(65 + random()*25)::int) ||
+    #      chr(floor(65 + random()*25)::int));
+    #      INSERT INTO public."Cars" ("CarMakeID","CarRegNum","CarType")
+    #    SELECT  (select "MakeID" from public."Makes" where "MakeID" >= (select floor(random()* (SELECT MAX("MakeID") FROM public."Makes"))::int) limit 1) ,
+    #      CarNum, 
+    #      (SELECT  "CarTypeID" FROM public."CarType" ORDER BY random() LIMIT 1);
+    #       
+    #    insert into public."Contract" ("CarNumber","ContractStart","ContractEnd","ParkingID","PersonID")
+    #         select 
+    #              CarNum,
+    #                 (SELECT CURRENT_DATE - 1 -(30 * floor( random()*12)::int) ) ,
+    #                 (SELECT CURRENT_DATE + 30 * floor( random()*12)::int ),
+    #                    floor( 1+ random()*9999)::int,
+    #                    Persons."PersonID";
+    #  END LOOP;
+    #END;
+    #$$ LANGUAGE plpgsql;
+
+
 
 
 def create_CarType (CarTypeName):
@@ -200,13 +262,12 @@ def create_Car (CarRegNum,CarMakeID,CarType):
     cursor = get_cursor()
     record = get_Car_by_Reg_num(CarRegNum)
     if cursor.rowcount == 0:
-        query = 'INSERT INTO public."Cars"("CarRegNum", "CarMakeID" , "CarType")' + "VALUES ('"+ str(CarRegNum)+"',"+ str(CarMakeID)+","+ str(CarType) +"');"
+        query = 'INSERT INTO public."Cars"("CarRegNum", "CarMakeID" , "CarType")' + "VALUES ('"+ str(CarRegNum)+"',"+ str(CarMakeID)+","+ str(CarType) +");"
         cursor.execute(query)
         
         _connection.commit()
     else:
         makeid = record[0]
-    return makeid
 
 def read_Car ():
     cursor = get_cursor()
@@ -314,7 +375,6 @@ def create_person (PersonID, PersonLastName, PersonName,PersonMidleName):
         _connection.commit()
     else:
         makeid = record[0]
-    return makeid
 
 def read_person ():
     cursor = get_cursor()
@@ -464,7 +524,6 @@ def create_contract (CarNumber,PersonID,ParkingID,days):
     cursor.execute(query)
     
     _connection.commit()
-    return makeid
 
 def close_contract(ContractID):
      cursor = get_cursor()

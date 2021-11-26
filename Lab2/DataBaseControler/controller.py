@@ -37,6 +37,7 @@ class Controller(object):
         else:
             
             self.clear_data()
+            self.data["CarNumber"] = Carnum
             self.fill_avto()
             self.fill_parking_info()
             self.fill_person_info()
@@ -53,6 +54,11 @@ class Controller(object):
         
         if cose == "3":
             self.CarType_control()
+
+        if cose == "4":
+            self.del_contract()
+        if cose == "5":
+            self.random_create()
 
     def make_control(self):
         self.clear_data()
@@ -80,6 +86,8 @@ class Controller(object):
             self.data["MakeDescription"] = self.view.get_str()
             self.save_make(True)
 
+    def random_create(self):
+        self.model.random_create(self.view.random_create_mess())
     
 
     def CarType_control(self):
@@ -112,14 +120,10 @@ class Controller(object):
         resalt = self.get_person_by_id(self.data["PersonID"])
         if resalt:
             self.view.print_person_masseg(resalt)
-            cose = get_int()
-            if cose == "0":
-                return -1
-            if cose == "1":
-                self.data["PersonID"] = resalt["PersonID"]
-                self.data["PersonLastName"] = resalt["PersonLastName"]
-                self.data["PersonMidleName"] = resalt["PersonMidleName"]
-                self.data["PersonName"] = resalt["PersonName"]
+            self.data["PersonID"] = resalt["PersonID"]
+            self.data["PersonLastName"] = resalt["PersonLastName"]
+            self.data["PersonMidleName"] = resalt["PersonMidleName"]
+            self.data["PersonName"] = resalt["PersonName"]
         else:
             self.view.print_person_masseg_LName()
             self.data["PersonLastName"] = self.Get_Name()
@@ -128,11 +132,7 @@ class Controller(object):
             self.view.print_person_masseg_MName()
             self.data["PersonMidleName"] = self.Get_Name()
         self.view.show_FIO(self.data["PersonLastName"],self.data["PersonName"], self.data["PersonMidleName"])
-        cose = self.view.get_int()
-        if cose == "1":
-            return 1
-        if cose == "0":
-            self.fill_person_info()
+
 
 
     def fill_make(self):
@@ -189,7 +189,7 @@ class Controller(object):
 
 
     def fill_parking_info(self):
-        self.show_parking_place()
+        #self.show_parking_place()
         self.view.print_parking_place_query()
         ParkingID = self.view.get_int()
         if 'ParkingID' in self.data:
@@ -206,7 +206,7 @@ class Controller(object):
     def get_person_code(self):
         self.view.print_code_query()
         code = self.view.get_int()
-        if len(code) == 10:
+        if len(code) == 11:
             return code
         else:
             self.view.print_error_code_query()
@@ -227,14 +227,15 @@ class Controller(object):
         else:
             self.view.print_error_car_num_query()
             return
+    
 
     def save_car(self,update=False):
         if update:
-            self.update_Car(self.data["CarNumber"],self.data["CarMakeID"],self.data["CarType"])
+            self.update_Car(self.data["CarNumber"],self.data["CarMake"],self.data["CarType"])
             return
-        if "CarNumber" in self.data:
+        if self.data["CarMake"] != '':
             if not self.get_Car_by_Reg_num(self.data["CarNumber"]):
-                self.create_Car(self.data["CarNumber"],self.data["CarMakeID"],self.data["CarType"])
+                self.create_Car(self.data["CarNumber"],self.data["CarMake"],self.data["CarType"])
                 return
 
     def save_make(self,update=False):
@@ -260,45 +261,21 @@ class Controller(object):
         self.view.show_items(items)
 
     def get_make_by_name(self, Makes_name):
-        #try:
             item = self.model.get_make_by_name(Makes_name)
-            #self.view.show_item(item_type, item_name, item)
-        #except mvc_exself.ItemNotStored as e:
-            #self.view.display_missing_item_error(item_name, e)
+            return item
     def get_make_by_id(self, MakesID):
             item = self.model.get_make_by_id(MakesID)
             return item
-            #self.view.show_item(item_type, item_name, item)
-        #except mvc_exself.ItemNotStored as e:
-            #self.view.display_missing_item_error(item_name, e)
 
     def create_make(self, MakeName,MakeDescription):
-
-        #try:
         self.model.create_make(MakeName,MakeDescription)
-            #self.view.display_item_stored(name, item_type)
-        #except mvc_exself.ItemAlreadyStored as e:
-            #self.view.display_item_already_stored_error(name, item_type, e)
 
     def update_make(self,MakeID,MakeName,MakeDescription):
-
-        #try:
         self.model.update_make (MakeID,MakeName,MakeDescription)
-            #self.view.display_item_updated(name, older['price'], older['quantity'], price, quantity)
-        #except mvc_exself.ItemNotStored as e:
-            #self.view.display_item_not_yet_stored_error(name, item_type, e)
-            # if the item is not yet stored and we performed an update, we have
-            # 2 options: do nothing or call insert_item to add it.
-            # self.insert_item(name, price, quantity)
 
     def del_make(self, MakeID):
-        #try:
         self.model.del_make (MakeID)
-            #self.view.display_item_deletion(name)
-        #except mvc_exself.ItemNotStored as e:
-            #self.view.display_item_not_yet_stored_error(name, item_type, e)
 
-###Type
 
     def show_CarType(self):
         items = self.model.read_CarType()
@@ -331,7 +308,7 @@ class Controller(object):
     
     def get_Car_by_Reg_num (self,CarRegNum):
          items = self.model.get_Car_by_Reg_num (CarRegNum)
-         self.view.show_items(items)
+         return items
 
     def create_Car (self,CarRegNum,CarMakeID,CarType):
          items = self.model.create_Car (CarRegNum,CarMakeID,CarType)
@@ -375,7 +352,7 @@ class Controller(object):
     
     def show_parking_place (self,):
          items = self.model.read_parking_place ()
-         self.view.print_table(items,2)
+         self.view.print_parking_info(items)
         
     
     def update_parking_place (self,ParkingPlaceID,ParkingPlaceDesc):
@@ -388,7 +365,14 @@ class Controller(object):
         
     
     ########Person
-    
+    def save_person(self,update = False):
+        if update:
+            self.update_person(self.data["PersonID"], self.data["PersonLastName"], self.data["PersonName"],self.data["PersonMidleName"] )
+            return 
+        if self.data["PersonLastName"] != '':
+            if not self.get_person_by_id(self.data["PersonID"]):
+                self.create_person(self.data["PersonID"], self.data["PersonLastName"], self.data["PersonName"],self.data["PersonMidleName"] )
+                return
     
     def get_person_by_last_name (self,PersonLastName):
          items = self.model.get_person_by_last_name (PersonLastName)
@@ -431,7 +415,7 @@ class Controller(object):
     
     def create_phones (self,PersonID,Phone):
          items = self.model.create_phones (PersonID,Phone)
-         self.view.show_items(items)
+
         
     
     def show_phones (self,):
@@ -472,6 +456,8 @@ class Controller(object):
     
     def create_contract (self):
         self.save_car()
+        self.save_person()
+        self.model.create_contract (self.data["CarNumber"],self.data["PersonID"],self.data["ParkingID"],self.data["days"])
         
     
     def show_contract (self,):
@@ -484,7 +470,17 @@ class Controller(object):
         
     
     
-    def del_contract (self,ContractID):
-        self.model.del_contract (ContractID)
 
+
+    def del_contract(self):
+        cose= self.view.del_masseg()
+        if cose == "1":
+            resald= self.view.del_masseg_contract_id()
+            self.model.del_contract_by_temp_table_ContractID(resald)
+        elif cose == "2":
+            resald= self.view.del_masseg_regnum()
+            self.model.del_contract_by_temp_table_CarNum(resald)
+        elif cose == "3":
+            resald= self.view.del_masseg_person_id()            
+            self.model.del_contract_by_temp_table_personID(resald)
 ######
