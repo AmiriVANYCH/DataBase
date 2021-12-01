@@ -19,7 +19,7 @@ class ModelBasic(object):
     def get_cursor(self):
         
         if self._cursor:
-            return _cursor
+            return self._cursor
         else:
             connection = self.get_connection()
             self._cursor = connection.cursor(row_factory=dict_row)
@@ -31,7 +31,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT * FROM public."Makes" WHERE "MakeName" ='+"'" + str(makeName)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -40,7 +40,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select * from public."Makes" where "MakeID" ='+"'" + str(makeID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -53,7 +53,7 @@ class ModelBasic(object):
             query = 'INSERT INTO public."Makes"("MakeName", "MakeDescription")' + "VALUES ('"+ str(makeName)+"','"+ str(MakeDescription)+"');"
             cursor.execute(query)
             
-            _connection.commit()
+            self._connection.commit()
         else:
             makeid = record["MakeID"]
         return makeid
@@ -62,7 +62,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT "MakeID", "MakeName", "MakeDescription" FROM public."Makes";'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
     
@@ -72,7 +72,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."Makes"	SET  "MakeName"='+"'"+str(MakeName) +"'"+', "MakeDescription"='+"'"+str(MakeDescription) +"'"+ '	WHERE "MakeID" = '+ str(MakeID)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
     
     
     def del_make (self ,MakeID):
@@ -81,7 +81,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'DELETE FROM public."Makes"	WHERE "MakeID"='+ str(MakeID)+ ';'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
     
 
 
@@ -92,7 +92,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT * FROM public."CarType" WHERE "CarTypeName" ='+"'" + str(CarTypeName)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -101,7 +101,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select * from public."CarType" where "CarTypeID" ='+"'" + str(CarTypeID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
             
@@ -113,14 +113,14 @@ class ModelBasic(object):
         if cursor.rowcount == 0:
             query = 'INSERT INTO public."CarType"("CarTypeName")' + "VALUES ('"+ str(CarTypeName)+"');"
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
     
     
     def read_CarType (self ,):
         cursor = self.get_cursor()
         query = 'SELECT "CarTypeID", "CarTypeName" FROM public."CarType" ; '
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
     
@@ -130,7 +130,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."CarType"	SET  "CarTypeName"='+"'"+str(CarTypeName) +"'"+'	WHERE "CarTypeID" = '+ str(CarTypeID)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
     
     
     def del_CarType (self ,CarTypeID):
@@ -139,7 +139,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'DELETE FROM public."CarType"	WHERE "CarTypeID"='+ str(CarTypeID)+ ';'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
 
 
 
@@ -149,7 +149,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT * FROM public."Cars" WHERE "CarRegNum" ='+"'" + str(CarRegNum)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -163,7 +163,7 @@ class ModelBasic(object):
             query = 'INSERT INTO public."Cars"("CarRegNum", "CarMakeID" , "CarType")' + "VALUES ('"+ str(CarRegNum)+"',"+ str(CarMakeID)+","+ str(CarType) +");"
             cursor.execute(query)
             
-            _connection.commit()
+            self._connection.commit()
         else:
             makeid = record[0]
     
@@ -171,7 +171,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT "CarRegNum", "CarMakeID", "CarType" FROM public."Cars";'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
     
@@ -181,7 +181,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."Cars"	SET  "CarType"='+"'"+str(CarType) +"'"+', "CarMakeID"='+"'"+str(CarMakeID) +"'"+ '	WHERE "CarRegNum" = '+ str(CarRegNum)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
     
     
     def del_Car (self ,CarRegNum):
@@ -190,7 +190,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'DELETE FROM public."Cars"	WHERE "CarRegNum"='+ str(CarRegNum)+ ';'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
         
         
         ##########Parking
@@ -200,7 +200,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select * from public."ParkingPlace" where "ParkingPlaceID" ='+"'" + str(ParkingPlaceID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -212,7 +212,7 @@ class ModelBasic(object):
             query = 'INSERT INTO public."ParkingPlace"("ParkingPlaceID", "ParkingPlaceDesc")' + "VALUES ('"+ str(ParkingPlaceID)+"','"+ str(ParkingPlaceDesc)+"');"
             cursor.execute(query)
             ParkingPlaceid=cursor.lastrowid
-            _connection.commit()
+            self._connection.commit()
         else:
             ParkingPlaceid = record[0]
         return ParkingPlaceid
@@ -221,7 +221,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT "ParkingPlaceID",  "ParkingPlaceDesc" FROM public."ParkingPlace";'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
     
@@ -231,16 +231,16 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."ParkingPlace"	SET ' +', "ParkingPlaceDesc"='+"'"+str(ParkingPlaceDesc) +"'"+ '	WHERE "ParkingPlaceID" = '+ str(ParkingPlaceID)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
     
         
-        def del_parking_place (self,ParkingPlaceID):
+    def del_parking_place (self,ParkingPlaceID):
             cursor = self.get_cursor()
             record = get_parking_place_by_id(ParkingPlaceID)
             if cursor.rowcount > 0:
                 query = 'DELETE FROM public."ParkingPlace"	WHERE "ParkingPlaceID"='+ str(ParkingPlaceID)+ ';'
                 cursor.execute(query)
-                _connection.commit()
+                self._connection.commit()
             
         
     ########Person
@@ -250,7 +250,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT * FROM public."Persons" WHERE "PersonLastName" ='+"'" + str(PersonLastName)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
         
@@ -260,7 +260,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select * from public."Persons" where "PersonID" ='+"'" + str(PersonID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
 
@@ -268,7 +268,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select "ParkingPlaceID", "ParkingPlaceDesc" from public."ParkingPlace" where "ParkingPlaceID" not in (select "ParkingID" from public."Contract" where "ContractEnd" >= (SELECT CURRENT_DATE))'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
 
@@ -277,7 +277,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select "ParkingPlaceID", "ParkingPlaceDesc" from public."ParkingPlace" where "ParkingPlaceID" not in (select "ParkingID" from public."Contract" where "ContractEnd" >= (SELECT CURRENT_DATE)) and "ParkingPlaceID" = '+ str(id)
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -288,7 +288,7 @@ class ModelBasic(object):
             query = 'INSERT INTO public."Persons"("PersonID", "PersonLastName", "PersonName" , "PersonMidleName" )' + "VALUES ('"+ str(PersonID), str(PersonLastName), str(PersonName),str(PersonMidleName) +"');"
             cursor.execute(query)
         
-            _connection.commit()
+            self._connection.commit()
         else:
             makeid = record[0]
         
@@ -297,7 +297,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT "PersonID", "PersonLastName", "PersonName","PersonMidleName" FROM public."Persons";'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
         
@@ -308,7 +308,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."Persons" SET "PersonLastName"='+"'"+str(PersonLastName) +"'"+'"PersonName"='+"'"+str(PersonName) +"'"+', "PersonMidleName"='+"'"+str(PersonMidleName) +"'"+ '	WHERE "PersonID" = '+ str(PersonID)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
         
     
     
@@ -318,7 +318,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'DELETE FROM public."Persons"	WHERE "PersonID"='+ str(PersonID)+ ';'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
         
     
     #######Phones
@@ -326,7 +326,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select * from public."Phones" where "Phone" ='+"'" + str(Phone)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
         
@@ -340,7 +340,7 @@ class ModelBasic(object):
             query = 'INSERT INTO public."Phones"("PersonID", "Phone")' + "VALUES ('"+ str(PersonID)+"','"+ str(Phone)+"');"
             cursor.execute(query)
         
-            _connection.commit()
+            self._connection.commit()
         else:
             makeid = record[0]
         return makeid
@@ -350,7 +350,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT "PersonID", "Phone" FROM public."Phones";'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
         
@@ -361,7 +361,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."Phones"	SET , "PersonID"='+"'"+str(PersonID) +"'"+ '	WHERE "Phone" = '+ str(Phone)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
         
     
     
@@ -371,7 +371,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'DELETE FROM public."Phones"	WHERE "Phone"='+ str(Phone)+ ';'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
         
     
     ####### Contracts
@@ -380,7 +380,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'SELECT * FROM public."Contract" WHERE "PersonID" ='+"'" + str(PersonID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
         
@@ -394,7 +394,7 @@ class ModelBasic(object):
 	                    INNER JOIN public."Persons" on public."Persons"."PersonID" = public."Contract"."PersonID"
 	                where "ContractID"=(select max("ContractID") from public."Contract" where "CarNumber" = \'''' + str(CarNumber)+"')"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -402,7 +402,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'select * from public."Contract" where "ParkingID" ='+"'" + str(ParkingID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
        
@@ -410,13 +410,13 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = 'UPDATE public."Contract"	SET  "ContractEnd"= (SELECT CURRENT_DATE-1)  WHERE "ContractID" = '+ str(ContractID)+ ' ;'
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
     
     def get_contract_by_ContractID (self,ContractID):
         cursor = self.get_cursor()
         query = 'select * from public."Contract" where "ContractID" ='+"'" + str(ContractID)+"'"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
     
@@ -425,7 +425,7 @@ class ModelBasic(object):
         cursor = self.get_cursor()
         query = ''' select '' as  "ContractID", '' as "CarNumber", '' as "ParkingID", '' as "PersonID", '' as "ContractStart", '' as "ContractEnd", '' as "CarMakeID", '' as "CarType", '' as "CarTypeName", '' as "MakeName", '' as "PersonLastName", '' as "PersonName", '' as "PersonMidleName"'''
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchone()
         return record
         
@@ -435,14 +435,19 @@ class ModelBasic(object):
         query = 'INSERT INTO public."Contract"("CarNumber","PersonID","ParkingID","ContractStart","ContractEnd")' + "VALUES ('"+ str(CarNumber)+"',"+str(PersonID)+","+str(ParkingID)+","+"(SELECT CURRENT_DATE) " +","+"(SELECT CURRENT_DATE +"+str(days)+"));"
         cursor.execute(query)
     
-        _connection.commit()
+        self._connection.commit()
         
     
     def read_contract (self,):
         cursor = self.get_cursor()
-        query = 'SELECT "CarNumber","PersonID","ParkingID","ContractStart","ContractEnd" FROM public."Contract";'
+        query = '''select "ContractID", "CarNumber", "ParkingID", "Contract"."PersonID" as "PersonID", "ContractStart", "ContractEnd","CarMakeID","CarType", "CarTypeName", "MakeName", "PersonLastName", "PersonName", "PersonMidleName"
+                    from public."Contract" 
+	                INNER JOIN public."Cars" on public."Contract"."CarNumber" = public."Cars"."CarRegNum" 
+	                INNER JOIN public."CarType" on public."Cars"."CarType" = public."CarType"."CarTypeID"
+	                INNER JOIN public."Makes" on public."Makes"."MakeID" = public."Cars"."CarMakeID"
+	                INNER JOIN public."Persons" on public."Persons"."PersonID" = public."Contract"."PersonID"'''
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
         record = cursor.fetchall()
         return record
         
@@ -453,7 +458,7 @@ class ModelBasic(object):
         if cursor.rowcount > 0:
             query = 'UPDATE public."Contract"	SET  "CarNumber"='+"'"+str(CarNumber) +"'"+', "PersonID"='+"'"+str(PersonID) +"'"+', "ParkingID"='+"'"+str(ParkingID)+"'"+ ', "ContractStart"='+"'"+str(ContractStart) +"'"+ ', "ContractEnd"='+"'"+str(ContractEnd) +"'"+'	WHERE "ContractID" = '+ str(ContractID)+ ' ;'
             cursor.execute(query)
-            _connection.commit()
+            self._connection.commit()
         
     
    
@@ -469,10 +474,10 @@ class ModelBasic(object):
     DROP TABLE public."TMP_Contract";'''
 
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
 
     def del_contract_by_temp_table_personID(self,personID):
-        _connection= self.get_connection()
+        self._connection= self.get_connection()
         cursor = self.get_cursor()
         query ='''DROP TABLE IF EXISTS public."TMP_Contract";
     CREATE TABLE IF NOT EXISTS public."TMP_Contract"("ContractID" bigint NOT NULL,"CarNumber" character varying(8) COLLATE pg_catalog."default" NOT NULL,"PersonID" bigint NOT NULL,"ParkingID" smallint NOT NULL,"ContractStart" date NOT NULL,"ContractEnd" date NOT NULL);
@@ -482,10 +487,10 @@ class ModelBasic(object):
    delete from public."Persons" where "PersonID" =  ''' +str(personID)+  ''';
     DROP TABLE public."TMP_Contract";'''
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
 
     def del_contract_by_temp_table_ContractID(self,ContractID):
-        _connection= self.get_connection()
+        self._connection= self.get_connection()
         cursor = self.get_cursor()
         query ='''DROP TABLE IF EXISTS public."TMP_Contract";
     CREATE TABLE IF NOT EXISTS public."TMP_Contract"
@@ -504,13 +509,13 @@ class ModelBasic(object):
     DROP TABLE public."TMP_Contract";'''
 
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
 
     def random_create (self, param):
         cursor = self.get_cursor()
         query = "CALL public.generate_data("+str(param)+");"
         cursor.execute(query)
-        _connection.commit()
+        self._connection.commit()
     #CREATE OR REPLACE PROCEDURE generate_data(dataCount integer)
     #AS $$
     #
@@ -561,3 +566,20 @@ class ModelBasic(object):
     #END;
     #$$ LANGUAGE plpgsql;
 
+    def select(self,parking_start , parking_end ,PersonPart, Date ):
+        cursor = self.get_cursor()
+        query = '''select "ContractID", "CarNumber", "ParkingID", "Contract"."PersonID" as "PersonID", "ContractStart", "ContractEnd","CarMakeID","CarType", "CarTypeName", "MakeName", "PersonLastName", "PersonName", "PersonMidleName"
+	    from public."Contract"
+        INNER JOIN public."Cars" on public."Contract"."CarNumber" = public."Cars"."CarRegNum" 
+        INNER JOIN public."CarType" on public."Cars"."CarType" = public."CarType"."CarTypeID"
+        INNER JOIN public."Makes" on public."Makes"."MakeID" = public."Cars"."CarMakeID"
+        INNER JOIN public."Persons" on public."Persons"."PersonID" = public."Contract"."PersonID"
+        where "ContractID" > 1
+        and "ParkingID" between '''+parking_start +''' and '''+ parking_end +'''
+        and "PersonLastName" like  '''+"'%"+ PersonPart +"%'"+'''
+        and "ContractEnd" >  '''+"'"+ Date +"'"
+
+        cursor.execute(query)
+        self._connection.commit()
+        record = cursor.fetchone()
+        return record

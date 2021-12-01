@@ -59,6 +59,8 @@ class Controller(object):
             self.del_contract()
         if cose == "5":
             self.random_create()
+        if cose == "6":
+            self.select_contract()
 
     def make_control(self):
         self.clear_data()
@@ -90,7 +92,7 @@ class Controller(object):
         self.model.random_create(self.view.random_create_mess())
     
 
-    def CarType_control(self):
+    def CarType_control(self):  
         self.clear_data()
         cose = self.view.get_type_menu()
         if cose == "1":
@@ -484,3 +486,12 @@ class Controller(object):
             resald= self.view.del_masseg_person_id()            
             self.model.del_contract_by_temp_table_personID(resald)
 ######
+    def select_contract(self):
+        parking_start=self.view.get_str()
+        parking_end=self.view.get_str()
+        PersonPart= self.view.get_str()
+        Date= self.view.get_str()
+        contract= self.model.select(parking_start , parking_end ,PersonPart, Date )
+        if contract:
+            self.view.show_item(contract)
+
